@@ -46,6 +46,59 @@ python -c "from screener import run_screen; import json; from pathlib import Pat
 - 相对强度在本池内百分位近似「前 1–2%」
 - 静态站无法在浏览器内对全池做实时批量下载（CORS / 请求量）；刷新依赖 Actions
 
+
+
+## 回测与纸面交易
+
+账户默认 **100,000 美元**。规则对齐库拉马吉风格文档：流动性 ≥ 1000 万美元日成交额、相对强度池内前约 1–2%、日线盘整突破近似入场、单笔风险 0.5%、止损取入场日低/ADR 封顶、3–5 日后分批卖出 1/3、余仓跌破 10 日均线离场；可选纳指（QQQ）站上 10/20 日均线过滤。
+
+### 依赖
+
+```bash
+pip install -r requirements.txt
+```
+
+### 运行回测
+
+默认用约 50 只高流动性动量名**样例子集**（加快演示）；全池加 `--full`（更慢）。
+
+```bash
+# 在仓库根目录
+python -m backtest
+# 或指定区间 / 全池
+python -m backtest --start 2020-01-01 --end 2025-12-31
+python -m backtest --full
+```
+
+输出（中文标签）：
+
+| 文件 | 说明 |
+|------|------|
+| `backtest/output/equity_curve.png` | 权益曲线与回撤 |
+| `backtest/output/stats.json` | 年化、最大回撤、胜率、利润因子、笔数等 |
+| `backtest/output/trades.csv` | 成交明细 |
+| `data/equity_curve.png` | 同步副本（可供 Pages 引用） |
+| `data/backtest_stats.json` | 同步统计副本 |
+
+样例限制：子集非全市场；日线近似开盘区间突破；yfinance 免费源可能缺数/延迟；含简化佣金滑点，**非实盘**。
+
+### 运行纸面交易
+
+读取 `data/last_scan.json` 信号，按相同风控规则模拟成交，状态写入 `paper/state/paper_state.json`。**无真实经纪商下单。**
+
+```bash
+python -m paper run      # 按最新信号模拟一步（更新持仓）
+python -m paper status   # 查看现金、权益、持仓与最近成交
+python -m paper reset    # 重置为 10 万美元空仓
+```
+
+### 目录（新增）
+
+```
+backtest/     # 回测包：下载、信号、引擎、统计与作图
+paper/        # 纸面交易 CLI 与状态
+```
+
 ## 免责声明
 
 仅供学习研究，不构成投资建议。

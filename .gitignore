@@ -2,3 +2,10 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# 回测缓存与纸面状态（保留 output 样例图/统计可提交）
+backtest/cache/
+paper/state/
+*.pyc
+__pycache__/
+.venv/
