@@ -140,6 +140,8 @@ python -m paper.portfolio_top5 report   # 打印中文摘要
 | `data/portfolio_top5.json` | 持仓与盈亏状态 |
 | `data/pnl_latest.md` | 最新中文日报 |
 
+Pages「TOP5 纸面组合盈亏」区块读取 `data/portfolio_top5.json` 展示持仓与浮动盈亏。
+
 ### 目录（新增）
 
 ```

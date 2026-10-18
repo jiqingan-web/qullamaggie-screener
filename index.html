@@ -72,6 +72,34 @@
       </div>
     </div>
 
+    <div class="card pnl-card" style="margin-top:16px">
+      <h2>TOP5 纸面组合盈亏 <span class="badge" id="pnlBadge">纸面</span></h2>
+      <p class="hint" id="pnlMeta">加载 data/portfolio_top5.json… 按 TOP5 建议股数建账，每日刷新标记价；成员变动只提示、不自动换仓。非真实经纪商。</p>
+      <div class="pnl-summary" id="pnlSummary"></div>
+      <div class="table-wrap">
+        <table id="pnltbl">
+          <thead>
+            <tr>
+              <th>排名</th>
+              <th>代码</th>
+              <th>名称</th>
+              <th>股数</th>
+              <th>成本价</th>
+              <th>标记价</th>
+              <th>市值$</th>
+              <th>盈亏$</th>
+              <th>盈亏%</th>
+              <th>建议止损</th>
+            </tr>
+          </thead>
+          <tbody id="pnlbody">
+            <tr><td colspan="10" class="empty">暂无纸面组合数据</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="hint" id="pnlRebalance" style="margin-top:10px"></div>
+    </div>
+
     <div class="grid mid" style="margin-top:16px">
       <div class="card">
         <h2>观察名单 <span class="badge" id="countBadge">0</span></h2>

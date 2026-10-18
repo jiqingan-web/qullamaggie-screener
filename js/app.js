@@ -11,6 +11,83 @@
   const DATA_URL = "data/last_scan.json";
 
   const TOP5_URL = "data/top5.json";
+  const PORTFOLIO_URL = "data/portfolio_top5.json";
+
+  function fmtUsd(v) {
+    if (v == null || v === "") return "—";
+    const n = Number(v);
+    if (Number.isNaN(n)) return "—";
+    const sign = n > 0 ? "+" : "";
+    return sign + n.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function renderPortfolio(data) {
+    const tb = $("pnlbody");
+    const badge = $("pnlBadge");
+    const meta = $("pnlMeta");
+    const summary = $("pnlSummary");
+    const reb = $("pnlRebalance");
+    if (!tb) return;
+    const list = (data && data.持仓) || [];
+    const tot = (data && data.合计) || {};
+    const cash = data && data.现金美元;
+    if (badge) {
+      const pnl = tot.盈亏美元;
+      if (pnl == null) badge.textContent = "纸面";
+      else if (pnl > 0) { badge.textContent = "盈利"; badge.className = "badge ok"; }
+      else if (pnl < 0) { badge.textContent = "亏损"; badge.className = "badge warn"; }
+      else { badge.textContent = "持平"; badge.className = "badge"; }
+    }
+    if (meta && data) {
+      meta.textContent =
+        `更新：${data.上次更新 || "—"}（Asia/Shanghai）· 建仓 ${data.建仓时间 || "—"} · ` +
+        `来源 TOP5 ${data.来源TOP5更新时间 || "—"}。${data.说明 || ""}`;
+    }
+    if (summary) {
+      const pnl = tot.盈亏美元;
+      const pct = tot["盈亏%"];
+      const pnlCls = pnl > 0 ? "pos" : pnl < 0 ? "neg" : "";
+      summary.innerHTML =
+        `<span>现金 <strong>$${(cash ?? 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>` +
+        `<span>持仓市值 <strong>$${(tot.持仓市值美元 ?? 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>` +
+        `<span>权益 <strong>$${(tot.权益美元 ?? 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>` +
+        `<span>浮动盈亏 <strong class="${pnlCls}">${fmtUsd(pnl)}（${pct == null ? "—" : (pct > 0 ? "+" : "") + Number(pct).toFixed(2) + "%"}）</strong></span>`;
+    }
+    if (reb) {
+      const tips = (data && data.调仓提示) || [];
+      reb.textContent = tips.length ? ("调仓提示：" + tips.join("；")) : "";
+    }
+    if (!list.length) {
+      tb.innerHTML = `<tr><td colspan="10" class="empty">暂无纸面组合（请运行 python -m paper.portfolio_top5 update）</td></tr>`;
+      return;
+    }
+    tb.innerHTML = list.map((r) => {
+      const pnl = r.盈亏美元;
+      const pct = r["盈亏%"];
+      const cls = pnl > 0 ? "pos" : pnl < 0 ? "neg" : "";
+      return `
+      <tr>
+        <td><span class="rank">#${r.排名 ?? ""}</span></td>
+        <td><strong>${r.代码}</strong></td>
+        <td title="${r.名称 || ""}">${(r.名称 || r.代码).slice(0, 18)}</td>
+        <td>${r.股数 ?? "—"}</td>
+        <td>${r.成本价 ?? "—"}</td>
+        <td>${r.标记价 ?? "—"}</td>
+        <td>${r.市值美元 == null ? "—" : Number(r.市值美元).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td><span class="${cls}">${fmtUsd(pnl)}</span></td>
+        <td><span class="${cls}">${pct == null ? "—" : ((pct > 0 ? "+" : "") + Number(pct).toFixed(2) + "%")}</span></td>
+        <td>${r.建议止损 ?? "—"}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function loadPortfolio(cacheBust) {
+    const url = cacheBust ? `${PORTFOLIO_URL}?t=${Date.now()}` : PORTFOLIO_URL;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`无法加载纸面组合（HTTP ${res.status}）`);
+    return res.json();
+  }
+
 
   function renderTop5(data) {
     const tb = $("top5body");
@@ -171,6 +248,7 @@
       if (!data.结果) throw new Error(data.说明 || data.错误 || "数据格式无效");
       applyResult(data);
       try { renderTop5(await loadTop5(true)); } catch (e2) { /* TOP5 可选 */ }
+      try { renderPortfolio(await loadPortfolio(true)); } catch (e3) { /* 纸面可选 */ }
     } catch (e) {
       $("statusMeta").textContent = "错误：" + e.message;
     } finally {
@@ -244,5 +322,9 @@
   loadTop5(false).then(renderTop5).catch(() => {
     const tb = $("top5body");
     if (tb) tb.innerHTML = `<tr><td colspan="12" class="empty">暂无 TOP5 数据</td></tr>`;
+  });
+  loadPortfolio(false).then(renderPortfolio).catch(() => {
+    const tb = $("pnlbody");
+    if (tb) tb.innerHTML = `<tr><td colspan="10" class="empty">暂无纸面组合数据</td></tr>`;
   });
 })();
