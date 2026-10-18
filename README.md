@@ -29,6 +29,16 @@ pip install -r requirements.txt
 python -c "from screener import run_screen; import json; from pathlib import Path; r=run_screen(); Path('data/last_scan.json').write_text(json.dumps(r,ensure_ascii=False,indent=2),encoding='utf-8')"
 ```
 
+
+## 自动刷新（可选）
+
+本机 `gh` OAuth 令牌缺少 `workflow` 范围，未能把 `.github/workflows/refresh.yml` 推上仓库。
+若需每日自动刷新 `data/last_scan.json`，请在仓库网页手动添加 Actions 工作流，或用带 `workflow` 权限的 PAT 推送本地文件：
+
+` /workspace/qullamaggie-pages/.github/workflows/refresh.yml `
+
+也可在 Actions 未启用时，本地运行 `screener.py` 后提交更新的 JSON。
+
 ## 限制
 
 - 数据源为免费雅虎财经（yfinance），有延迟与偶发缺数
