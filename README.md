@@ -125,6 +125,21 @@ python -m paper status   # 查看现金、权益、持仓与最近成交
 python -m paper reset    # 重置为 10 万美元空仓
 ```
 
+### TOP5 纸面组合盈亏
+
+按 `data/top5.json` 建议股数开仓（账户 10 万美元），每日刷新标记价，输出中文盈亏日报。**成员变动只记调仓提示，不自动换仓。**
+
+```bash
+python -m paper.portfolio_top5 init     # 用最新 TOP5 建账（覆盖）
+python -m paper.portfolio_top5 update   # 刷新 yfinance 标记价与盈亏
+python -m paper.portfolio_top5 report   # 打印中文摘要
+```
+
+| 文件 | 说明 |
+|------|------|
+| `data/portfolio_top5.json` | 持仓与盈亏状态 |
+| `data/pnl_latest.md` | 最新中文日报 |
+
 ### 目录（新增）
 
 ```
