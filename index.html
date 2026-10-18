@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>库拉马吉风格美股一键筛选</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>库拉马吉风格美股一键筛选</h1>
+    <p class="sub">账户固定 100,000 美元 · 相对强度 + 流动性 + 结构标记 + 仓位示例 · 数据来源雅虎财经（免费，有延迟）· GitHub Pages 静态站</p>
+
+    <div class="grid top">
+      <div class="card">
+        <h2>规则说明 <span class="badge">文档</span></h2>
+        <ul class="rules">
+          <li><strong>相对强度：</strong>按 1 月 / 3 月 / 6 月涨幅百分位，取约前 1–2%（或综合得分靠前）。</li>
+          <li><strong>流动性门槛：</strong>近 20 日平均日成交额 ≥ 账户 × 100 → <strong>≥ 1,000 万美元</strong>。</li>
+          <li><strong>结构标记（数据允许时）：</strong>前期大涨约 30–100%+（1–3 月内）、盘整约 2 周–2 月、价格贴近上升的 10/20 日均线、接近突破。</li>
+          <li><strong>20 日平均振幅%：</strong>展示；可选勾选「振幅 ≥ 4%」软过滤（波动够用）。</li>
+          <li><strong>仓位（10 万美元）：</strong>默认风险 0.5%（500 美元）；股数 = 风险 ÷（入场 − 止损）；止损取日低或振幅估计；隔夜仓位 ≤ 30%（3 万美元）；典型仓位约 10–15%。</li>
+          <li><strong>市场区提示：</strong>以纳斯达克 100 代理是否站上 10/20 日均线判断绿色进攻区（仅提示，不强制过滤）。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>市场区提示</h2>
+        <div class="market" id="marketBox">
+          <span><span class="dot gray"></span>尚未加载</span>
+        </div>
+        <div class="meta" id="statusMeta">点击「一键筛选」加载观察名单。</div>
+        <div class="controls" style="margin-top:14px">
+          <label class="chk"><input type="checkbox" id="optAdr" /> 振幅 ≥ <input type="number" id="adrVal" value="4" min="0" step="0.5" /> %</label>
+          <label class="chk"><input type="checkbox" id="optStruct" /> 仅显示贴近均线盘整或接近突破</label>
+        </div>
+        <div class="controls">
+          <button id="btnScan" type="button">一键筛选</button>
+          <button id="btnCache" class="secondary" type="button">重新加载数据</button>
+        </div>
+        <div class="hint">
+          「一键筛选」在浏览器内重新拉取本站 <code>data/last_scan.json</code>（由 GitHub Actions 用 yfinance 每日/手动扫描后推送），再按上方勾选做过滤。无需安装 Python 或启动本机服务。
+        </div>
+      </div>
+    </div>
+
+    <div class="grid mid" style="margin-top:16px">
+      <div class="card">
+        <h2>观察名单 <span class="badge" id="countBadge">0</span></h2>
+        <div class="table-wrap">
+          <table id="tbl">
+            <thead>
+              <tr>
+                <th data-k="代码">代码</th>
+                <th data-k="名称">名称</th>
+                <th data-k="最新价">最新价</th>
+                <th data-k="1月涨幅">1月涨幅%</th>
+                <th data-k="3月涨幅">3月涨幅%</th>
+                <th data-k="6月涨幅">6月涨幅%</th>
+                <th data-k="日成交额">日成交额</th>
+                <th data-k="20日平均振幅%">20日平均振幅%</th>
+                <th data-k="距10日均线%">距10日均线%</th>
+                <th data-k="距20日均线%">距20日均线%</th>
+                <th data-k="是否贴近均线盘整">贴近均线盘整</th>
+                <th data-k="建议仓位股数示例">建议仓位股数示例</th>
+                <th data-k="RS分">相对强度分</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td colspan="13" class="empty">暂无数据</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>仓位（10万美元）</h2>
+        <div class="pos-form">
+          <label>入场价（美元）<input type="number" id="entry" step="0.01" placeholder="例如 120" /></label>
+          <label>止损价（美元）<input type="number" id="stop" step="0.01" placeholder="例如 114" /></label>
+          <label>风险比例（%）<input type="number" id="riskPct" value="0.5" step="0.1" min="0.1" /></label>
+          <button type="button" id="btnPos" style="height:38px">计算仓位</button>
+        </div>
+        <div class="pos-out" id="posOut">填写入场与止损后计算。默认风险 0.5% = 500 美元；建议股数不超过隔夜 30% 与典型 10–15%。</div>
+      </div>
+    </div>
+
+    <footer>
+      免责声明：本工具仅供学习与研究库拉马吉（Kristjan Kullamägi）动量交易思路，不构成投资建议。免费行情有延迟与缺数可能；股票池为高流动性美股子集（约数百只），非全市场。时区显示为 Asia/Shanghai。站点托管于 GitHub Pages。
+    </footer>
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>
