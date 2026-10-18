@@ -19,8 +19,8 @@
           <li><strong>流动性门槛：</strong>近 20 日平均日成交额 ≥ 账户 × 100 → <strong>≥ 1,000 万美元</strong>。</li>
           <li><strong>结构标记（数据允许时）：</strong>前期大涨约 30–100%+（1–3 月内）、盘整约 2 周–2 月、价格贴近上升的 10/20 日均线、接近突破。</li>
           <li><strong>20 日平均振幅%：</strong>展示；可选勾选「振幅 ≥ 4%」软过滤（波动够用）。</li>
-          <li><strong>仓位（10 万美元）：</strong>默认风险 0.5%（500 美元）；股数 = 风险 ÷（入场 − 止损）；止损取日低或振幅估计；隔夜仓位 ≤ 30%（3 万美元）；典型仓位约 10–15%。</li>
-          <li><strong>市场区提示：</strong>以纳斯达克 100 代理是否站上 10/20 日均线判断绿色进攻区（仅提示，不强制过滤）。</li>
+          <li><strong>仓位（10 万美元）：</strong>默认风险 0.4%（400 美元，区间约 0.3–0.5%）；股数 = 风险 ÷（入场 − 止损）；止损取日低或振幅估计；隔夜单票 ≤ 约 18%；典型仓位约 8–12%。另见「最可能爆涨五只」综合评分。</li>
+          <li><strong>市场区提示：</strong>以纳斯达克 100 代理是否站上 10/20 日均线判断绿色进攻区；爆涨模型在非绿区对总分软惩罚 ×0.92（不硬过滤）。</li>
         </ul>
       </div>
       <div class="card">
@@ -40,6 +40,35 @@
         <div class="hint">
           「一键筛选」在浏览器内重新拉取本站 <code>data/last_scan.json</code>（由 GitHub Actions 用 yfinance 每日/手动扫描后推送），再按上方勾选做过滤。无需安装 Python 或启动本机服务。
         </div>
+      </div>
+    </div>
+
+
+    <div class="card top5-card" style="margin-top:16px">
+      <h2>最可能爆涨五只 <span class="badge ok" id="top5Badge">TOP5</span></h2>
+      <p class="hint" id="top5Meta">加载 data/top5.json… 综合分 = 相对强度40 + 均线盘整20 + 振幅15 + 突破扩张15 + 前期大涨10；非绿区 ×0.92。仓位收紧：单票约 8–12%，隔夜上限约 18%，风险约 0.4%。</p>
+      <div class="table-wrap">
+        <table id="top5tbl">
+          <thead>
+            <tr>
+              <th>排名</th>
+              <th>代码</th>
+              <th>名称</th>
+              <th>爆涨分</th>
+              <th>最新价</th>
+              <th>1月涨幅%</th>
+              <th>3月涨幅%</th>
+              <th>20日平均振幅%</th>
+              <th>接近突破</th>
+              <th>建议仓位股数</th>
+              <th>建议仓位占比%</th>
+              <th>建议止损</th>
+            </tr>
+          </thead>
+          <tbody id="top5body">
+            <tr><td colspan="12" class="empty">暂无 TOP5 数据</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -76,10 +105,10 @@
         <div class="pos-form">
           <label>入场价（美元）<input type="number" id="entry" step="0.01" placeholder="例如 120" /></label>
           <label>止损价（美元）<input type="number" id="stop" step="0.01" placeholder="例如 114" /></label>
-          <label>风险比例（%）<input type="number" id="riskPct" value="0.5" step="0.1" min="0.1" /></label>
+          <label>风险比例（%）<input type="number" id="riskPct" value="0.4" step="0.1" min="0.1" /></label>
           <button type="button" id="btnPos" style="height:38px">计算仓位</button>
         </div>
-        <div class="pos-out" id="posOut">填写入场与止损后计算。默认风险 0.5% = 500 美元；建议股数不超过隔夜 30% 与典型 10–15%。</div>
+        <div class="pos-out" id="posOut">填写入场与止损后计算。默认风险 0.4% = 400 美元；建议股数不超过隔夜约 18% 与典型 8–12%。</div>
       </div>
     </div>
 

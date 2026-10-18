@@ -143,3 +143,17 @@ footer { margin-top: 24px; color: #64748b; font-size: 0.78rem; line-height: 1.5;
   background: rgba(59,130,246,.08); border: 1px solid var(--line);
   color: var(--muted); font-size: 0.8rem; line-height: 1.45;
 }
+
+/* 最可能爆涨五只 */
+.top5-card h2 .badge.ok { font-size: 0.8rem; }
+#top5tbl { min-width: 960px; }
+#top5tbl th:nth-child(1), #top5tbl td:nth-child(1) { text-align: center; }
+.rank {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 28px; height: 22px; padding: 0 6px; border-radius: 6px;
+  background: #1e3a5f; color: #93c5fd; font-weight: 700; font-size: 0.8rem;
+}
+.burst { color: #fbbf24; font-size: 1.05em; }
+.top5-row:nth-child(1) .rank { background: #854d0e; color: #fde68a; }
+.top5-row:nth-child(2) .rank { background: #334155; color: #e2e8f0; }
+.top5-row:nth-child(3) .rank { background: #7c2d12; color: #fdba74; }

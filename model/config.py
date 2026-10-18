@@ -1,0 +1,16 @@
+"""仓位与账户参数（收紧版）。"""
+
+ACCOUNT_USD = 100_000.0
+MIN_DOLLAR_VOLUME = 10_000_000.0  # ≥ 1000 万美元
+
+# 单笔风险：默认 0.4%，区间约 0.3–0.5%
+DEFAULT_RISK_PCT = 0.004
+RISK_PCT_LOW = 0.003
+RISK_PCT_HIGH = 0.005
+
+# 单票仓位上限约 8–12%；隔夜总敞口上限约 15–20%
+TYPICAL_SIZE_LOW = 0.08
+TYPICAL_SIZE_HIGH = 0.12
+MAX_OVERNIGHT_PCT = 0.18  # 单票隔夜市值上限（相对账户）
+
+TOP_N = 5

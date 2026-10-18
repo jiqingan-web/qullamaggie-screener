@@ -10,6 +10,54 @@
   const MIN_DOLLAR_VOLUME = ACCOUNT_USD * 100;
   const DATA_URL = "data/last_scan.json";
 
+  const TOP5_URL = "data/top5.json";
+
+  function renderTop5(data) {
+    const tb = $("top5body");
+    const badge = $("top5Badge");
+    const meta = $("top5Meta");
+    if (!tb) return;
+    const list = (data && data.结果) || [];
+    if (badge) badge.textContent = list.length ? `TOP${list.length}` : "TOP5";
+    if (meta && data) {
+      const w = data.权重说明 || {};
+      const pos = data.仓位规则 || {};
+      meta.textContent =
+        `更新：${data.更新时间 || "—"}（${data.时区 || "Asia/Shanghai"}）· ` +
+        `权重 相对强度${w.相对强度 || "40"} / 均线盘整${w.均线贴近与盘整紧密度 || 20} / 振幅${w["振幅波动(ADR%)"] || 15} / 突破扩张${w.接近突破与区间扩张 || 15} / 结构${w.前期大涨结构 || 10}；` +
+        `${w.纳指软惩罚 || "非绿区×0.92"}。` +
+        `仓位：单票 ${pos["单票仓位%"] || "8–12"}%，隔夜上限 ${pos["隔夜单票上限%"] ?? 18}%，风险 ${pos["单笔风险默认%"] ?? 0.4}%。`;
+    }
+    if (!list.length) {
+      tb.innerHTML = `<tr><td colspan="12" class="empty">暂无 TOP5 数据（请运行 python -m model top5）</td></tr>`;
+      return;
+    }
+    tb.innerHTML = list.map((r) => `
+      <tr class="top5-row">
+        <td><span class="rank">#${r.排名 ?? ""}</span></td>
+        <td><strong>${r.代码}</strong></td>
+        <td title="${r.名称 || ""}">${(r.名称 || r.代码).slice(0, 18)}</td>
+        <td><strong class="burst">${r.爆涨分 ?? "—"}</strong></td>
+        <td>${r.最新价 ?? "—"}</td>
+        <td>${fmtPct(r["1月涨幅"])}</td>
+        <td>${fmtPct(r["3月涨幅"])}</td>
+        <td>${r["20日平均振幅%"] ?? "—"}</td>
+        <td>${flag(r.接近突破)}</td>
+        <td><strong>${r.建议仓位股数 ?? "—"}</strong></td>
+        <td>${r["建议仓位占比%"] ?? "—"}</td>
+        <td>${r.建议止损 ?? "—"}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function loadTop5(cacheBust) {
+    const url = cacheBust ? `${TOP5_URL}?t=${Date.now()}` : TOP5_URL;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`无法加载 TOP5（HTTP ${res.status}）`);
+    return res.json();
+  }
+
+
   let rawData = null;
   let rows = [];
   let sortKey = "RS分";
@@ -122,6 +170,7 @@
       const data = await loadScanJson(true);
       if (!data.结果) throw new Error(data.说明 || data.错误 || "数据格式无效");
       applyResult(data);
+      try { renderTop5(await loadTop5(true)); } catch (e2) { /* TOP5 可选 */ }
     } catch (e) {
       $("statusMeta").textContent = "错误：" + e.message;
     } finally {
@@ -154,9 +203,9 @@
     }
     const riskUsd = account * riskPct;
     const shares = Math.floor(riskUsd / (entry - stop));
-    const maxOvernight = Math.floor((account * 0.3) / entry);
-    const typicalLo = Math.floor((account * 0.1) / entry);
-    const typicalHi = Math.floor((account * 0.15) / entry);
+    const maxOvernight = Math.floor((account * 0.18) / entry);
+    const typicalLo = Math.floor((account * 0.08) / entry);
+    const typicalHi = Math.floor((account * 0.12) / entry);
     const suggested = Math.min(shares, maxOvernight, typicalHi);
     const notional = suggested * entry;
     $("posOut").innerHTML =
@@ -192,4 +241,8 @@
       $("statusMeta").textContent =
         `账户 ${ACCOUNT_USD.toLocaleString("zh-CN")} 美元 · 流动性门槛 10 百万美元 · 尚无数据：${e.message}`;
     });
+  loadTop5(false).then(renderTop5).catch(() => {
+    const tb = $("top5body");
+    if (tb) tb.innerHTML = `<tr><td colspan="12" class="empty">暂无 TOP5 数据</td></tr>`;
+  });
 })();
