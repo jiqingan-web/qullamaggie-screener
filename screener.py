@@ -46,9 +46,14 @@ def fetch_history(ticker: str, period: str = "1y") -> pd.DataFrame | None:
     try:
         t = yf.Ticker(ticker)
         df = t.history(period=period, auto_adjust=True)
-        if df is None or df.empty or len(df) < 50:
+        if df is None or df.empty:
             return None
         df = df.rename(columns=str.title)
+        # Yahoo 偶发给出 OHLC 全为空、仅有 Volume 的末日 K 线，丢弃以免最新价变 NaN
+        if "Close" in df.columns:
+            df = df.dropna(subset=["Close"])
+        if df.empty or len(df) < 50:
+            return None
         return df
     except Exception:
         return None
@@ -74,7 +79,7 @@ def analyze_ticker(ticker: str, hist: pd.DataFrame | None = None) -> dict[str, A
     volume = hist["Volume"].astype(float)
 
     last = float(close.iloc[-1])
-    if last <= 0:
+    if last != last or last <= 0:  # NaN or non-positive
         return None
 
     # 日成交额（近20日均值）
@@ -214,7 +219,9 @@ def get_market_filter() -> dict[str, Any]:
         df = fetch_history("QQQ", period="3mo")
         if df is None:
             return {"可用": False, "说明": "无法获取 QQQ 数据"}
-        close = df["Close"].astype(float)
+        close = df["Close"].astype(float).dropna()
+        if len(close) < 20:
+            return {"可用": False, "说明": "QQQ 有效收盘价不足"}
         last = float(close.iloc[-1])
         ma10 = float(close.tail(10).mean())
         ma20 = float(close.tail(20).mean())
@@ -269,9 +276,13 @@ def run_screen(
             else:
                 # 单标的情况
                 sub = data.dropna(how="all")
-            if sub is None or sub.empty or len(sub) < 50:
+            if sub is None or sub.empty:
                 return None
             sub = sub.rename(columns=str.title)
+            if "Close" in sub.columns:
+                sub = sub.dropna(subset=["Close"])
+            if sub.empty or len(sub) < 50:
+                return None
             return sub
         except Exception:
             return fetch_history(t)

@@ -245,9 +245,14 @@ def run_top5(
                 sub = data[t].dropna(how="all")
             else:
                 sub = data.dropna(how="all")
-            if sub is None or sub.empty or len(sub) < 50:
+            if sub is None or sub.empty:
                 return None
-            return sub.rename(columns=str.title)
+            sub = sub.rename(columns=str.title)
+            if "Close" in sub.columns:
+                sub = sub.dropna(subset=["Close"])
+            if sub.empty or len(sub) < 50:
+                return None
+            return sub
         except Exception:
             return fetch_history(t)
 

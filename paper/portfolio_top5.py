@@ -40,23 +40,37 @@ def _save_json(path: Path, data: dict[str, Any]) -> None:
 
 
 def _fetch_marks(tickers: list[str]) -> dict[str, float]:
-    """用 yfinance 拉取最新价；失败时返回空 dict（调用方回退成本价）。"""
+    """用 yfinance 拉取最新价；失败时返回空 dict（调用方回退成本价）。
+
+    优先 fast_info.lastPrice（当日/盘后更及时）；Yahoo 偶发给出 OHLC 为空的末日 K 线，
+    history 有效收盘可能仍停在上一完整交易日。
+    """
     import yfinance as yf
 
     marks: dict[str, float] = {}
     if not tickers:
         return marks
 
-    # 逐只拉取更稳（多标的 download 列结构因版本而异）
     for t in tickers:
         px = None
         try:
-            hist = yf.Ticker(t).history(period="5d", auto_adjust=True)
-            if hist is not None and not hist.empty:
-                px = float(hist["Close"].iloc[-1])
+            fi = yf.Ticker(t).fast_info
+            for key in ("lastPrice", "previousClose", "regularMarketPreviousClose"):
+                lp = fi.get(key)
+                if lp is not None:
+                    cand = float(lp)
+                    if cand == cand and cand > 0:
+                        px = cand
+                        break
+            if px is None:
+                hist = yf.Ticker(t).history(period="5d", auto_adjust=True)
+                if hist is not None and not hist.empty:
+                    closes = hist["Close"].dropna()
+                    if not closes.empty:
+                        px = float(closes.iloc[-1])
         except Exception:
             px = None
-        if px is not None and px > 0:
+        if px is not None and px == px and px > 0:
             marks[t] = round(px, 4)
     return marks
 
